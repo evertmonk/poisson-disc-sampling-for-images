@@ -30,15 +30,16 @@ function createSampleElement(sample: any, i: number) {
 const parent = document.getElementById('root');
 
 const images = [
+  { size: 10 },
   { size: 20 },
   { size: 40 },
-  { size: 60 },
   { size: 80 },
-  { size: 100 },
+  { size: 160 },
+  { size: 320 },
 ];
 
 if (parent) {
   const { x, y, width, height } = parent.getBoundingClientRect();
-  const grid = poissonImageSampler({ bounds: { x, y, width, height }, images, minDist: 10, maxTries: 30 });
+  const grid = poissonImageSampler({ bounds: { x, y, width, height }, images, minDist: 20, maxTries: 30 });
   renderSamples(parent, grid);
 }
