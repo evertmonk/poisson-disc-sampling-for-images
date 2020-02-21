@@ -194,8 +194,8 @@ describe('isAllowedToDraw()', () => {
 
   test('returns true if distance between neighbour is big enough', () => {
     expect.assertions(1);
-    const sample = { x: 11, y: 11, radius: 5 };
-    const minDist = 2;
+    const sample = { x: 11, y: 11, radius: 1 };
+    const minDist = 1;
 
     const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid);
     expect(result).toBe(true);

@@ -157,7 +157,10 @@ export function isAllowedToDraw(
       const neighbour: Sample | undefined = grid[col + i + (row + j) * cols];
 
       // When there's a neighbour within the minimum distance, this means that the sample cannot be placed
-      if (neighbour && Math.hypot(neighbour.x - sample.x, neighbour.y - sample.y) < minDist) {
+      if (
+        neighbour &&
+        Math.hypot(neighbour.x - sample.x, neighbour.y - sample.y) < (minDist + sample.radius + neighbour.radius)
+      ) {
         return false;
       }
     }
@@ -268,7 +271,7 @@ export default function poissonImageSampler(options: Options): SampleList {
 
   // In order to create the grid, first calculate the size of a single cell and check how many cells and rows need
   // to be created in order to fill the given bounds
-  const CELL_SIZE: number = MIN_DIST / Math.sqrt(2);
+  const CELL_SIZE: number = (MIN_DIST + RADIUS * 2) / Math.sqrt(2);
   const COLS: number = Math.floor(BOUNDS.width / CELL_SIZE);
   const ROWS: number = Math.floor(BOUNDS.height / CELL_SIZE);
 
