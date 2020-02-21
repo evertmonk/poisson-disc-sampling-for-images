@@ -167,6 +167,7 @@ export function isInBounds(sample: Sample, col: number, row: number, cols: numbe
  * @param {number} cellSize - Size of cell in grid
  * @param {number} cols - Length of columns in grid
  * @param {number} minDist - Minimum distance between samples
+ * @param {number} range - range of neighbours to check
  * @param {SampleList} grid - List of samples that represents a two dimensional grid
  */
 export function isAllowedToDraw(
@@ -175,11 +176,10 @@ export function isAllowedToDraw(
   cols: number,
   minDist: number,
   grid: SampleList,
+  range: number,
 ): boolean {
   const col: number = Math.floor(sample.x / cellSize);
   const row: number = Math.floor(sample.y / cellSize);
-  const range: number = Math.ceil((minDist + sample.radius * 2) / cellSize) + 1;
-
   // Check all the neighbours around the generated sample to check if it can be placed    [ ] [ ] [ ]
   // See the visualization of the two loops that run below this comment                   [ ] [x] [ ]
   // x marks the position of the generated sample                                         [ ] [ ] [ ]
@@ -305,9 +305,11 @@ export default function poissonImageSampler(options: Options): SampleList {
   // In order to create the grid, first calculate the size of a single cell and check how many cells and rows need
   // to be created in order to fill the given bounds
   const minRadius = Math.min(...options.images.map(v => v.size));
+  const maxRadius = Math.max(...options.images.map(v => v.size));
   const CELL_SIZE: number = (MIN_DIST + minRadius * 2) / Math.sqrt(2);
   const COLS: number = Math.floor(BOUNDS.width / CELL_SIZE);
   const ROWS: number = Math.floor(BOUNDS.height / CELL_SIZE);
+  const RANGE: number = Math.ceil((MIN_DIST + maxRadius * 2) / CELL_SIZE);
 
   // There are two arrays, the grid is a representation of a two dimensional grid in a one dimensional array.
   // The grid will be used to check if a newly generated sample can be added to the grid
@@ -347,7 +349,7 @@ export default function poissonImageSampler(options: Options): SampleList {
       // Make sure the sample is placed within the bounds and can be placed next to the other samples
       // If it's not valid, try again
       if (!isInBounds(newSample, col, row, COLS, ROWS, BOUNDS)) continue;
-      if (!isAllowedToDraw(newSample, CELL_SIZE, COLS, MIN_DIST, GRID)) continue;
+      if (!isAllowedToDraw(newSample, CELL_SIZE, COLS, MIN_DIST, GRID, RANGE)) continue;
 
       // Add the new sample to the grid and also add it to the active list so it can be used to render new samples
       GRID[getIndexInGrid(newSample, CELL_SIZE, COLS)] = newSample;

@@ -167,13 +167,14 @@ describe('isAllowedToDraw()', () => {
     {x: 1, y: 11, radius: 5, index: 0 }, undefined, {x: 21, y: 11, radius: 5, index: 0 },
     {x: 1, y: 21, radius: 5, index: 0 }, {x: 11, y: 21, radius: 5, index: 0 }, {x: 21, y: 21, radius: 5, index: 0 }
   ];
+  const range = 1;
 
   test('returns false if all neighbors are filled and distance is too small', () => {
     expect.assertions(1);
     const sample = { x: 11, y: 11, radius: 5, index: 0 };
     const minDist = 20;
 
-    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid);
+    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid, range);
     expect(result).toBe(false);
   });
 
@@ -187,7 +188,7 @@ describe('isAllowedToDraw()', () => {
       undefined, undefined, undefined,
     ];
 
-    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, emptyGrid);
+    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, emptyGrid, range);
     expect(result).toBe(true);
   });
 
@@ -196,7 +197,7 @@ describe('isAllowedToDraw()', () => {
     const sample = { x: 11, y: 11, radius: 1, index: 0 };
     const minDist = 1;
 
-    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid);
+    const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid, range);
     expect(result).toBe(true);
   });
 });
