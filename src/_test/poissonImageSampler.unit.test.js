@@ -21,7 +21,7 @@ describe('createFirstSample()', () => {
     const bounds = { x: 20, y: 20, width: 40, height: 40 };
 
     for (let i = 0; i < 50; i += 1) {
-      const result = util.createFirstSample(bounds);
+      const result = util.createFirstSample(bounds, 5);
 
       expect(result.x).toBeGreaterThanOrEqual(bounds.x);
       expect(result.x).toBeLessThanOrEqual(bounds.x + bounds.width);
@@ -36,7 +36,7 @@ describe('createSampleFromSample()', () => {
     expect.assertions(5);
     const sample = { x: 100, y: 100, radius: 5 };
     const minDist = 20;
-    const newSample = util.createSampleFromSample(sample, minDist);
+    const newSample = util.createSampleFromSample(sample, 5, minDist);
 
     expect(newSample).toBeInstanceOf(Object);
     expect(Object.keys(newSample)).toStrictEqual(['x', 'y', 'radius']);
@@ -52,7 +52,7 @@ describe('createSampleFromSample()', () => {
     const minRadius = minDist + sample.radius + 5;
 
     for (let i = 0; i < 100; i += 1) {
-      const newSample = util.createSampleFromSample(sample, minDist);
+      const newSample = util.createSampleFromSample(sample, 5, minDist);
       const dist = Math.hypot(newSample.x - sample.x, newSample.y - sample.y);
 
       expect(dist).toBeGreaterThanOrEqual(minRadius);

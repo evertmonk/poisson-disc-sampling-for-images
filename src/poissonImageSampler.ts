@@ -25,10 +25,11 @@ type SampleList = (Sample | undefined)[];
 /**
  * @typedef {Object} Options
  * @property {Bounds} bounds - Bounds of container that will render samples
+ * @property {number=} radius - Radius of sample
  * @property {number=} minDist - Minimum distance that samples need to be apart
  * @property {number=} maxTries - Maximum amount of tries until sample is dead
  */
-type Options = { bounds: Bounds; minDist?: number; maxTries?: number; }
+type Options = { bounds: Bounds; radius?: number, minDist?: number; maxTries?: number; }
 
 // Functions
 // ---------------------
@@ -51,11 +52,11 @@ export function clampRandom(min: number, max: number): number {
  * @private
  * @function createFirstSample
  * @param {Bounds} bounds - Bounds of container
+ * @param {number} radius - Radius of sample
  * @return {Sample}
  */
-export function createFirstSample(bounds: Bounds): Sample {
+export function createFirstSample(bounds: Bounds, radius: number): Sample {
   const {x, y, width, height} = bounds;
-  const radius: number = 5;
 
   return {
     x: clampRandom(x + radius, width + x - radius),
@@ -70,12 +71,12 @@ export function createFirstSample(bounds: Bounds): Sample {
  * @private
  * @function createSampleFromSample
  * @param {Sample} sample - The sample that is used as a reference for positioning the new sample
+ * @param {number} radius - Radius of sample
  * @param {number} minDist - Minimum distance between samples
  * @return {Sample}
  */
-export function createSampleFromSample(sample: Sample, minDist: number): Sample {
+export function createSampleFromSample(sample: Sample, radius: number, minDist: number): Sample {
   const angle: number = Math.random() * Math.PI * 2;
-  const radius: number = 5;
   const minRadius: number = minDist + radius + sample.radius;
   const maxRadius: number = minRadius + minDist;
 
@@ -151,8 +152,8 @@ export function isAllowedToDraw(
   // Check all the neighbours around the generated sample to check if it can be placed    [ ] [ ] [ ]
   // See the visualization of the two loops that run below this comment                   [ ] [x] [ ]
   // x marks the position of the generated sample                                         [ ] [ ] [ ]
-  for (let i: number = -1; i <= 1; i += 1) {
-    for (let j: number = -1; j <= 1; j += 1) {
+  for (let i: number = -2; i <= 2; i += 1) {
+    for (let j: number = -2; j <= 2; j += 1) {
       const neighbour: Sample | undefined = grid[col + i + (row + j) * cols];
 
       // When there's a neighbour within the minimum distance, this means that the sample cannot be placed
@@ -180,6 +181,16 @@ export function hasValidBounds(bounds: any): boolean {
     typeof bounds.width === 'number' &&
     typeof bounds.height === 'number';
 }
+
+/**
+ * Checks if given radius is a number
+ *
+ * @private
+ * @function hasValidRadius
+ * @param {*} radius - Radius of sample
+ * @return {boolean}
+ */
+export function hasValidRadius(radius: any): boolean { return typeof radius === 'number'; }
 
 /**
  * Checks if given minimum distance is a number
@@ -213,6 +224,7 @@ export function hasValidMaxTries(maxTries: any): boolean { return typeof maxTrie
  */
 export default function poissonImageSampler(options: Options): SampleList {
   // These values will be used if there's no given minDist and / or maxTries in options
+  const DEFAULT_RADIUS: number = 5;
   const DEFAULT_MIN_DIST: number = 20;
   const DEFAULT_MAX_TRIES: number = 30;
 
@@ -221,6 +233,14 @@ export default function poissonImageSampler(options: Options): SampleList {
   if (!hasValidBounds(options && options.bounds)) {
     console.error('Please provide valid bounds in options object: { bounds: { x, y, width, height } }');
     return [];
+  }
+
+  // When the given radius is invalid, warn the user that the sampler is falling back to it's default value
+  const validRadius = hasValidRadius(options && options.radius);
+  if (!options.radius) {
+    console.warn(`The options.radius is not set. Falling back to default of ${DEFAULT_RADIUS}`);
+  } else if (!validRadius) {
+    console.error(`The given radius value is not a valid number. Falling back to default of ${DEFAULT_RADIUS}`);
   }
 
   // When the given minDist is invalid, warn the user that the sampler is falling back to it's default value
@@ -241,7 +261,8 @@ export default function poissonImageSampler(options: Options): SampleList {
 
   // After all the validations, store the values for further calculations
   const BOUNDS = options.bounds;
-  // We are sure that the minDist and maxTries are numbers if they are going to be used because of the checks above
+  // We are sure that the radius, minDist and maxTries are numbers if they are going to be used because of the checks above
+  const RADIUS: number = validRadius ? options.radius! : DEFAULT_RADIUS;
   const MIN_DIST: number = validMinDist ? options.minDist! : DEFAULT_MIN_DIST;
   const MAX_TRIES: number = validMaxTries ? options.maxTries! : DEFAULT_MAX_TRIES;
 
@@ -258,7 +279,7 @@ export default function poissonImageSampler(options: Options): SampleList {
   const ACTIVE: Sample[] = [];
 
   // To start filling the grid with samples there needs to be a sample to start the sampling of others
-  const sample: Sample = createFirstSample(BOUNDS);
+  const sample: Sample = createFirstSample(BOUNDS, RADIUS);
   const col: number = Math.floor(sample.x / CELL_SIZE);
   const row: number = Math.floor(sample.y / CELL_SIZE);
 
@@ -284,7 +305,7 @@ export default function poissonImageSampler(options: Options): SampleList {
     // Try for n amount of times to generate a valid sample from the selected active sample
     for (let i: number = 0; i < MAX_TRIES; i += 1) {
       // Create a new sample based on position of selected active sample
-      const newSample: Sample = createSampleFromSample(activeSample, MIN_DIST);
+      const newSample: Sample = createSampleFromSample(activeSample, RADIUS, MIN_DIST);
 
       // Make sure the sample is placed within the bounds and can be placed next to the other samples
       // If it's not valid, try again

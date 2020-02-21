@@ -63,10 +63,19 @@ describe('poissonImageSampler()', () => {
     expect(console.error).toHaveBeenCalledWith('Please provide valid bounds in options object: { bounds: { x, y, width, height } }');
   });
 
+  test('uses default radius if not set and warns', () => {
+    expect.assertions(2);
+
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, minDist: 5, maxTries: 30 });
+
+    expect(console.warn).toHaveBeenCalledTimes(1);
+    expect(console.warn).toHaveBeenCalledWith(`The options.radius is not set. Falling back to default of ${5}`);
+  });
+
   test('uses default minDist if not set and warns', () => {
     expect.assertions(2);
 
-    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, maxTries: 30 });
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, radius: 5, maxTries: 30 });
 
     expect(console.warn).toHaveBeenCalledTimes(1);
     expect(console.warn).toHaveBeenCalledWith(`The options.minDist is not set. Falling back to default of ${20}`);
@@ -75,25 +84,34 @@ describe('poissonImageSampler()', () => {
   test('uses default maxTries if not set and warns', () => {
     expect.assertions(2);
 
-    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, minDist: 20 });
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, radius: 5, minDist: 20 });
 
     expect(console.warn).toHaveBeenCalledTimes(1);
     expect(console.warn).toHaveBeenCalledWith(`The options.maxTries is not set. Falling back to default of ${30}`);
   });
 
-  test('uses default minDist if not set and errors', () => {
+  test('uses default radius if invalid radius is set and warns', () => {
     expect.assertions(2);
 
-    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, minDist: 'a', maxTries: 30 });
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, radius: 'a', minDist: 20, maxTries: 30 });
+
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith(`The given radius value is not a valid number. Falling back to default of ${5}`);
+  });
+
+  test('uses default minDist if invalid minDist is set and errors', () => {
+    expect.assertions(2);
+
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, radius: 5, minDist: 'a', maxTries: 30 });
 
     expect(console.error).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(`The given minDist value is not a valid number. Falling back to default of ${20}`);
   });
 
-  test('uses default maxTries if not set and errors', () => {
+  test('uses default maxTries if invalid maxTries is set and errors', () => {
     expect.assertions(2);
 
-    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, minDist: 20, maxTries: 'a' });
+    poissonImageSampler({ bounds: { x: 0, y: 0, width: 500, height: 500 }, radius: 5, minDist: 20, maxTries: 'a' });
 
     expect(console.error).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(`The given maxTries value is not a valid number. Falling back to default of ${30}`);

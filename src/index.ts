@@ -19,6 +19,7 @@ const parent = document.getElementById('root');
 
 if (parent) {
   const { x, y, width, height } = parent.getBoundingClientRect();
-  const grid = poissonImageSampler({ bounds: { x, y, width, height } });
+  const radius = 10;
+  const grid = poissonImageSampler({ bounds: { x, y, width, height }, radius, minDist: radius * 2.2, maxTries: 30 });
   renderSamples(parent, grid);
 }
