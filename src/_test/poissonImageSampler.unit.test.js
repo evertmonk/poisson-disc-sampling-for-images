@@ -21,7 +21,7 @@ describe('createFirstSample()', () => {
     const bounds = { x: 20, y: 20, width: 40, height: 40 };
 
     for (let i = 0; i < 50; i += 1) {
-      const result = util.createFirstSample(bounds, 5);
+      const result = util.createFirstSample(bounds, { size: 5 });
 
       expect(result.x).toBeGreaterThanOrEqual(bounds.x);
       expect(result.x).toBeLessThanOrEqual(bounds.x + bounds.width);
@@ -32,14 +32,15 @@ describe('createFirstSample()', () => {
 });
 
 describe('createSampleFromSample()', () => {
+  const sample = { x: 100, y: 100, radius: 5, index: 0 };
+  const minDist = 20;
+
   test('returns a sample', () => {
-    expect.assertions(5);
-    const sample = { x: 100, y: 100, radius: 5 };
-    const minDist = 20;
-    const newSample = util.createSampleFromSample(sample, 5, minDist);
+    expect.assertions(6);
+    const newSample = util.createSampleFromSample(sample, [{ size: 5 }], minDist);
 
     expect(newSample).toBeInstanceOf(Object);
-    expect(Object.keys(newSample)).toStrictEqual(['x', 'y', 'radius']);
+    expect(Object.keys(newSample)).toStrictEqual(['x', 'y', 'radius', 'index']);
     Object.keys(newSample).forEach(key => {
       expect(typeof newSample[key]).toEqual('number');
     });
@@ -47,12 +48,10 @@ describe('createSampleFromSample()', () => {
 
   test('returns a sample that is between minDist and minDist * 2 from given sample', () => {
     expect.assertions(200);
-    const sample = { x: 100, y: 100, radius: 5 };
-    const minDist = 20;
-    const minRadius = minDist + sample.radius + 5;
+    const minRadius = minDist + sample.radius * 2;
 
     for (let i = 0; i < 100; i += 1) {
-      const newSample = util.createSampleFromSample(sample, 5, minDist);
+      const newSample = util.createSampleFromSample(sample, [{ size: 5 }], minDist);
       const dist = Math.hypot(newSample.x - sample.x, newSample.y - sample.y);
 
       expect(dist).toBeGreaterThanOrEqual(minRadius);
@@ -66,7 +65,7 @@ describe('getIndexInGrid()', () => {
     expect.assertions(1);
     const cellSize = 10;
     const cols = 10;
-    const sample = { x: 45, y: 45, radius: 5 };
+    const sample = { x: 45, y: 45, radius: 5, index: 0 };
 
     const index = util.getIndexInGrid(sample, cellSize, cols);
 
@@ -81,7 +80,7 @@ describe('isInBounds()', () => {
 
   test('returns false if col > cols', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 10, radius: 5 };
+    const sample = { x: 10, y: 10, radius: 5, index: 0 };
     const col = 100;
     const row = 1;
 
@@ -91,7 +90,7 @@ describe('isInBounds()', () => {
 
   test('returns false if row > rows', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 10, radius: 5 };
+    const sample = { x: 10, y: 10, radius: 5, index: 0 };
     const col = 1;
     const row = 100;
 
@@ -101,7 +100,7 @@ describe('isInBounds()', () => {
 
   test('returns false if sample x - radius < bounds.x', () => {
     expect.assertions(1);
-    const sample = { x: 4, y: 10, radius: 5 };
+    const sample = { x: 4, y: 10, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -111,7 +110,7 @@ describe('isInBounds()', () => {
 
   test('returns false if sample x + radius > bounds.x + bounds.width', () => {
     expect.assertions(1);
-    const sample = { x: 96, y: 10, radius: 5 };
+    const sample = { x: 96, y: 10, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -121,7 +120,7 @@ describe('isInBounds()', () => {
 
   test('returns false if sample y - radius < bounds.y', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 4, radius: 5 };
+    const sample = { x: 10, y: 4, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -131,7 +130,7 @@ describe('isInBounds()', () => {
 
   test('returns false if sample y + radius > bounds.y + bounds.height', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 96, radius: 5 };
+    const sample = { x: 10, y: 96, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -141,7 +140,7 @@ describe('isInBounds()', () => {
 
   test('returns false if sample y + radius > bounds.y + bounds.height', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 96, radius: 5 };
+    const sample = { x: 10, y: 96, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -151,7 +150,7 @@ describe('isInBounds()', () => {
 
   test('returns true if sample is within bounds', () => {
     expect.assertions(1);
-    const sample = { x: 10, y: 10, radius: 5 };
+    const sample = { x: 10, y: 10, radius: 5, index: 0 };
     const col = 1;
     const row = 1;
 
@@ -164,14 +163,14 @@ describe('isAllowedToDraw()', () => {
   const cellSize = 10;
   const cols = 3;
   const grid = [
-    {x: 1, y: 1, radius: 5 }, {x: 11, y: 1, radius: 5 }, {x: 21, y: 1, radius: 5 },
-    {x: 1, y: 11, radius: 5 }, undefined, {x: 21, y: 11, radius: 5 },
-    {x: 1, y: 21, radius: 5 }, {x: 11, y: 21, radius: 5 }, {x: 21, y: 21, radius: 5 }
+    {x: 1, y: 1, radius: 5, index: 0 }, {x: 11, y: 1, radius: 5, index: 0 }, {x: 21, y: 1, radius: 5, index: 0 },
+    {x: 1, y: 11, radius: 5, index: 0 }, undefined, {x: 21, y: 11, radius: 5, index: 0 },
+    {x: 1, y: 21, radius: 5, index: 0 }, {x: 11, y: 21, radius: 5, index: 0 }, {x: 21, y: 21, radius: 5, index: 0 }
   ];
 
   test('returns false if all neighbors are filled and distance is too small', () => {
     expect.assertions(1);
-    const sample = { x: 11, y: 11, radius: 5 };
+    const sample = { x: 11, y: 11, radius: 5, index: 0 };
     const minDist = 20;
 
     const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid);
@@ -180,7 +179,7 @@ describe('isAllowedToDraw()', () => {
 
   test('returns true if there are no neighbors', () => {
     expect.assertions(1);
-    const sample = { x: 11, y: 11, radius: 5 };
+    const sample = { x: 11, y: 11, radius: 5, index: 0 };
     const minDist = 20;
     const emptyGrid = [
       undefined, undefined, undefined,
@@ -194,7 +193,7 @@ describe('isAllowedToDraw()', () => {
 
   test('returns true if distance between neighbour is big enough', () => {
     expect.assertions(1);
-    const sample = { x: 11, y: 11, radius: 1 };
+    const sample = { x: 11, y: 11, radius: 1, index: 0 };
     const minDist = 1;
 
     const result = util.isAllowedToDraw(sample, cellSize, cols, minDist, grid);
@@ -271,6 +270,36 @@ describe('hasValidBounds()', () => {
     expect.assertions(1);
     const bounds = { x: 0, y: 0, width: 0, height: 0 };
     const result = util.hasValidBounds(bounds);
+
+    expect(result).toBe(true);
+  });
+});
+
+describe('hasValidImageList()', () => {
+  test('returns false if not array', () => {
+    expect.assertions(1);
+    const result = util.hasValidImageList({ size: 10 });
+
+    expect(result).toBe(false);
+  });
+
+  test('returns false if array is empty', () => {
+    expect.assertions(1);
+    const result = util.hasValidImageList([]);
+
+    expect(result).toBe(false);
+  });
+
+  test('returns false if array contains invalid items', () => {
+    expect.assertions(1);
+    const result = util.hasValidImageList([{ width: 1 }]);
+
+    expect(result).toBe(false);
+  });
+
+  test('returns true if array contains valid items', () => {
+    expect.assertions(1);
+    const result = util.hasValidImageList([{ size: 1 }]);
 
     expect(result).toBe(true);
   });
