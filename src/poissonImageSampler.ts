@@ -153,9 +153,9 @@ export function isInBounds(sample: Sample, col: number, row: number, cols: numbe
   return (
     col < cols &&
     row < rows &&
-    sample.x - sample.radius >= bounds.x &&
+    sample.x - sample.radius >= 0 &&
     sample.x + sample.radius <= bounds.width &&
-    sample.y - sample.radius >= bounds.y &&
+    sample.y - sample.radius >= 0 &&
     sample.y + sample.radius <= bounds.height
   );
 }
