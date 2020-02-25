@@ -40,9 +40,9 @@ type ImageList = Image[];
  * @property {ImageList} images - List of image sizes that can be used
  * @property {number=} minDist - Minimum distance that samples need to be apart
  * @property {number=} maxTries - Maximum amount of tries until sample is dead
+ * @property {boolean=} isCircle - let sampler know image is circular
  */
- // * @property {number=} radius - Radius of sample
-type Options = { bounds: Bounds; images: ImageList, minDist?: number; maxTries?: number; }
+type Options = { bounds: Bounds; images: ImageList, minDist?: number; maxTries?: number; isCircle?: boolean }
 
 // Functions
 // ---------------------
@@ -78,16 +78,17 @@ export function getRadiusForSize(size: number): number {
  * @function createFirstSample
  * @param {Bounds} bounds - Bounds of container
  * @param {Image} image - Image size
+ * @param {boolean} isCircle - Defines if sample is circular
  * @return {Sample}
  */
-export function createFirstSample(bounds: Bounds, image: Image): Sample {
+export function createFirstSample(bounds: Bounds, image: Image, isCircle: boolean): Sample {
   const {x, y, width, height} = bounds;
   const { size } = image;
 
   return {
     x: clampRandom(x + size, width + x - size),
     y: clampRandom(y + size, height + y - size),
-    radius: getRadiusForSize(size),
+    radius: isCircle ? size : getRadiusForSize(size),
     index: 0,
   };
 }
@@ -100,9 +101,10 @@ export function createFirstSample(bounds: Bounds, image: Image): Sample {
  * @param {Sample} sample - The sample that is used as a reference for positioning the new sample
  * @param {ImageList} images - List of imageSizes
  * @param {number} minDist - Minimum distance between samples
+ * @param {boolean} isCircle - Defines if sample is circular
  * @return {Sample}
  */
-export function createSampleFromSample(sample: Sample, images: ImageList, minDist: number): Sample {
+export function createSampleFromSample(sample: Sample, images: ImageList, minDist: number, isCircle: boolean): Sample {
   const randomImageIndex = Math.floor(Math.random() * images.length);
   const { size } = images[randomImageIndex];
   const angle: number = Math.random() * Math.PI * 2;
@@ -112,7 +114,7 @@ export function createSampleFromSample(sample: Sample, images: ImageList, minDis
   return {
     x: sample.x + Math.cos(angle) * clampRandom(minRadius, maxRadius),
     y: sample.y + Math.sin(angle) * clampRandom(minRadius, maxRadius),
-    radius: getRadiusForSize(size),
+    radius: isCircle ? size : getRadiusForSize(size),
     index: randomImageIndex,
   };
 }
@@ -296,8 +298,9 @@ export default function poissonImageSampler(options: Options): SampleList {
   }
 
   // After all the validations, store the values for further calculations
-  const BOUNDS = options.bounds;
+  const BOUNDS: Bounds = options.bounds;
   const IMAGES: ImageList = options.images;
+  const IS_CIRCLE: boolean = options.isCircle || false;
   // We are sure that the radius, minDist and maxTries are numbers if they are going to be used because of the checks above
   const MIN_DIST: number = validMinDist ? options.minDist! : DEFAULT_MIN_DIST;
   const MAX_TRIES: number = validMaxTries ? options.maxTries! : DEFAULT_MAX_TRIES;
@@ -318,7 +321,7 @@ export default function poissonImageSampler(options: Options): SampleList {
   const ACTIVE: Sample[] = [];
 
   // To start filling the grid with samples there needs to be a sample to start the sampling of others
-  const sample: Sample = createFirstSample(BOUNDS, IMAGES[0]);
+  const sample: Sample = createFirstSample(BOUNDS, IMAGES[0], IS_CIRCLE);
   const col: number = Math.floor(sample.x / CELL_SIZE);
   const row: number = Math.floor(sample.y / CELL_SIZE);
 
@@ -344,7 +347,7 @@ export default function poissonImageSampler(options: Options): SampleList {
     // Try for n amount of times to generate a valid sample from the selected active sample
     for (let i: number = 0; i < MAX_TRIES; i += 1) {
       // Create a new sample based on position of selected active sample
-      const newSample: Sample = createSampleFromSample(activeSample, IMAGES, MIN_DIST);
+      const newSample: Sample = createSampleFromSample(activeSample, IMAGES, MIN_DIST, IS_CIRCLE);
 
       // Make sure the sample is placed within the bounds and can be placed next to the other samples
       // If it's not valid, try again
