@@ -5,11 +5,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no"/>
     <style>
-        html, body { margin: 0;  width: 100%; height: 100%; overflow: hidden; }
-        #root { width: 100%; height: 100%; overflow: hidden; }
-        .dot { position: absolute;  border-radius: 50%; transform: translate(-50%, -50%); }
-        .dot.active { background: salmon; }
-        .square { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: plum; }
+        html, body { margin: 0;  width: 100%; height: 100%; overflow: hidden; background: #131618; }
+        #root { width: calc(100% - 120px); height: calc(100% - 120px); overflow: hidden; top: 60px; left: 60px; position: absolute;}
+        .dot { position: absolute; transform: translate(-50%, -50%); }
+        .square { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     </style>
     <title>Poisson Disc Sampling for images: Example</title>
     <script src="./src/index.ts" defer></script>

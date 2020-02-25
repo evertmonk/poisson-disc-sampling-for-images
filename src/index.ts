@@ -15,12 +15,12 @@ function createSampleElement(sample: any, i: number) {
   el.style.height = elSize + 'px';
 
   const sqEl = document.createElement('div');
-  const sqElSize = images[sample.index].size;
 
   sqEl.classList.add('square');
-  sqEl.style.width = sqElSize + 'px';
-  sqEl.style.height = sqElSize + 'px';
-  sqEl.style.background = `url(https://picsum.photos/seed/${i * Math.random()}/${sqElSize}/${sqElSize}) center no-repeat`;
+  sqEl.style.width = elSize + 'px';
+  sqEl.style.height = elSize + 'px';
+  sqEl.style.background = `url(https://picsum.photos/seed/${i * Math.random()}/${elSize}/${elSize}) center no-repeat`;
+  sqEl.style.borderRadius = '50%';
 
   el.appendChild(sqEl);
 
@@ -30,16 +30,16 @@ function createSampleElement(sample: any, i: number) {
 const parent = document.getElementById('root');
 
 const images = [
-  { size: 10 },
-  { size: 20 },
-  { size: 40 },
-  { size: 80 },
-  { size: 160 },
-  { size: 320 },
+  // { size: 10 },
+  // { size: 20 },
+  // { size: 40 },
+  { size: 90 },
+  { size: 60 },
+  // { size: 320 },
 ];
 
 if (parent) {
   const { x, y, width, height } = parent.getBoundingClientRect();
-  const grid = poissonImageSampler({ bounds: { x, y, width, height }, images, minDist: 20, maxTries: 30 });
+  const grid = poissonImageSampler({ bounds: { x, y, width, height }, images, minDist: 15, maxTries: 40, isCircle: true });
   renderSamples(parent, grid);
 }
